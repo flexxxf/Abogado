@@ -1,9 +1,9 @@
 import React, { useMemo, useState } from 'react'
-import { clients as initialClients, cases } from '../data/mockData.js'
 import { formatDate } from '../utils.js'
+import { useAppData } from '../context/AppDataContext.jsx'
 
 export default function Clients() {
-  const [clients, setClients] = useState(initialClients)
+  const { clients, cases, addClient } = useAppData()
   const [query, setQuery] = useState('')
   const [selected, setSelected] = useState(null)
   const [showNew, setShowNew] = useState(false)
@@ -14,7 +14,7 @@ export default function Clients() {
   )
 
   function handleCreate(client) {
-    setClients((prev) => [client, ...prev])
+    addClient(client)
     setShowNew(false)
   }
 

@@ -1,20 +1,19 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { cases, clients, files, activity, storage, users, sharedWithMe } from '../data/mockData.js'
 import { timeAgo } from '../utils.js'
 import UploadModal from '../components/UploadModal.jsx'
 import { useAuth } from '../context/AuthContext.jsx'
-
-const userNameById = Object.fromEntries(users.map((u) => [u.id, u.name]))
+import { useAppData } from '../context/AppDataContext.jsx'
 
 export default function Dashboard() {
   const navigate = useNavigate()
   const { user } = useAuth()
+  const { cases, clients, files, transfers } = useAppData()
   const [showUpload, setShowUpload] = useState(false)
 
   const activeCases = cases.filter((c) => c.status === 'Activo').length
   const activeFiles = files.filter((f) => !f.trashed)
-  const pct = Math.round((storage.usedGB / storage.totalGB) * 100)
+  const pct = 0
 
   const actions = [
     { icon: '⚖', label: 'Nuevo expediente', onClick: () => navigate('/expedientes') },
@@ -48,7 +47,7 @@ export default function Dashboard() {
         </div>
         <div className="stat-card">
           <div className="label">Compartidos conmigo</div>
-          <div className="value accent">{sharedWithMe.length}</div>
+          <div className="value accent">{transfers.length}</div>
         </div>
       </div>
 
@@ -65,14 +64,14 @@ export default function Dashboard() {
       <div className="two-col">
         <div className="card">
           <div className="section-title">Actividad reciente</div>
-          {activity.map((a) => (
+          {transfers.map((a) => (
             <div key={a.id} className="activity-item">
               <span className="activity-dot" />
               <div className="activity-text">
                 <div>
-                  <span className="who">{userNameById[a.userId]}</span> {a.action} <strong>{a.target}</strong>
+                  <span className="who">Transferencia</span> <strong>{a.fileName}</strong>
                 </div>
-                <div className="activity-time">{timeAgo(a.at)}</div>
+                <div className="activity-time">{timeAgo(a.sentAt)}</div>
               </div>
             </div>
           ))}
@@ -81,8 +80,8 @@ export default function Dashboard() {
         <div className="card">
           <div className="section-title">Almacenamiento</div>
           <div className="storage-summary">
-            <div className="big">{storage.usedGB} GB</div>
-            <div className="muted">de {storage.totalGB} GB</div>
+            <div className="big">0 GB</div>
+            <div className="muted">de 0 GB</div>
           </div>
           <div className="storage-bar" style={{ background: 'var(--line)', marginTop: 12 }}>
             <div className="storage-bar-fill" style={{ width: `${pct}%`, background: 'var(--navy)' }} />

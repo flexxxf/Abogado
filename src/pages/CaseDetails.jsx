@@ -1,22 +1,22 @@
-import React, { useMemo, useState } from 'react'
+import React, { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { cases, clients, users, files as allFiles } from '../data/mockData.js'
+import { users } from '../data/mockData.js'
 import { formatDate, statusBadgeClass, fileIcon, formatSize } from '../utils.js'
 import UploadModal from '../components/UploadModal.jsx'
 import TransferModal from '../components/TransferModal.jsx'
-
-const clientNameById = Object.fromEntries(clients.map((c) => [c.id, c.name]))
-const lawyerNameById = Object.fromEntries(users.map((u) => [u.id, u.name]))
+import { useAppData } from '../context/AppDataContext.jsx'
 
 export default function CaseDetails() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const { cases, clients, files: allFiles, addFile } = useAppData()
   const item = cases.find((c) => c.id === id)
   const [tab, setTab] = useState('archivos')
   const [showUpload, setShowUpload] = useState(false)
   const [transferFile, setTransferFile] = useState(null)
-
-  const files = useMemo(() => allFiles.filter((f) => f.caseId === id && !f.trashed), [id])
+  const files = allFiles.filter((file) => file.caseId === id && !file.trashed)
+  const client = clients.find((entry) => entry.id === item?.clientId)
+  const lawyer = users.find((entry) => entry.id === item?.lawyerId)
 
   if (!item) {
     return (
@@ -44,9 +44,9 @@ export default function CaseDetails() {
       </div>
 
       <div className="detail-meta-grid">
-        <div className="item"><div className="label">Cliente</div><div className="value">{clientNameById[item.clientId]}</div></div>
+        <div className="item"><div className="label">Cliente</div><div className="value">{client?.name || '—'}</div></div>
         <div className="item"><div className="label">Tipo de caso</div><div className="value">{item.type}</div></div>
-        <div className="item"><div className="label">Abogado responsable</div><div className="value">{lawyerNameById[item.lawyerId]}</div></div>
+        <div className="item"><div className="label">Abogado responsable</div><div className="value">{lawyer?.name || '—'}</div></div>
         <div className="item"><div className="label">Creado</div><div className="value">{formatDate(item.createdAt)}</div></div>
         <div className="item"><div className="label">Actualizado</div><div className="value">{formatDate(item.updatedAt)}</div></div>
         <div className="item"><div className="label">Documentos</div><div className="value">{files.length}</div></div>
@@ -93,7 +93,7 @@ export default function CaseDetails() {
       )}
 
       {showUpload && (
-        <UploadModal cases={[item]} defaultCaseId={item.id} onClose={() => setShowUpload(false)} onUploaded={() => setShowUpload(false)} />
+        <UploadModal cases={[item]} defaultCaseId={item.id} onClose={() => setShowUpload(false)} onUploaded={(created) => { addFile(created); setShowUpload(false) }} />
       )}
       {transferFile && (
         <TransferModal file={transferFile} onClose={() => setTransferFile(null)} onSent={() => setTransferFile(null)} />

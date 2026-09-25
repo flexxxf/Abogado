@@ -1,20 +1,29 @@
 import React, { useState } from 'react'
-import { transfers as initialTransfers, users } from '../data/mockData.js'
+import { users } from '../data/mockData.js'
 import { useAuth } from '../context/AuthContext.jsx'
+import { useAppData } from '../context/AppDataContext.jsx'
 import { formatSize, formatDateTime, fileIcon } from '../utils.js'
 
 const nameById = Object.fromEntries(users.map((u) => [u.id, u.name]))
 
 export default function Transfers() {
   const { user } = useAuth()
-  const [transfers, setTransfers] = useState(initialTransfers)
   const [tab, setTab] = useState('recibidas')
+  const [savingId, setSavingId] = useState(null)
+  const [caseByTransfer, setCaseByTransfer] = useState({})
+  const { cases, transfers, updateTransfer } = useAppData()
 
   const received = transfers.filter((t) => t.toId === user?.id)
   const sent = transfers.filter((t) => t.fromId === user?.id)
 
   function respond(id, status) {
-    setTransfers((prev) => prev.map((t) => (t.id === id ? { ...t, status } : t)))
+    if (status === 'Aceptado') {
+      if (!caseByTransfer[id]) return
+      updateTransfer(id, { status: 'Aceptado', caseId: caseByTransfer[id] })
+      setSavingId(null)
+      return
+    }
+    updateTransfer(id, { status: 'Rechazado' })
   }
 
   const list = tab === 'recibidas' ? received : sent
@@ -52,7 +61,11 @@ export default function Transfers() {
               {tab === 'recibidas' && t.status === 'Pendiente' && (
                 <>
                   {t.allowDownload && <button className="btn btn-outline btn-sm">Descargar</button>}
-                  <button className="btn btn-primary btn-sm" onClick={() => respond(t.id, 'Aceptado')}>Guardar en expediente</button>
+                  <select className="select-field" value={caseByTransfer[t.id] || ''} onChange={(e) => setCaseByTransfer((current) => ({ ...current, [t.id]: e.target.value }))} aria-label="Expediente destino">
+                    <option value="">Expediente destino</option>
+                    {cases.map((item) => <option key={item.id} value={item.id}>#{item.number}</option>)}
+                  </select>
+                  <button className="btn btn-primary btn-sm" disabled={!caseByTransfer[t.id] || savingId === t.id} onClick={() => { setSavingId(t.id); respond(t.id, 'Aceptado') }}>Guardar en expediente</button>
                   <button className="btn btn-danger btn-sm" onClick={() => respond(t.id, 'Rechazado')}>Rechazar</button>
                 </>
               )}

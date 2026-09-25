@@ -1,15 +1,17 @@
 import React, { useMemo, useState } from 'react'
-import { files as initialFiles, cases, users } from '../data/mockData.js'
+import { cases, users } from '../data/mockData.js'
 import FileCard from '../components/FileCard.jsx'
 import FileList from '../components/FileList.jsx'
 import UploadModal from '../components/UploadModal.jsx'
 import TransferModal from '../components/TransferModal.jsx'
+import { useAppData } from '../context/AppDataContext.jsx'
 
 const ownerNameById = Object.fromEntries(users.map((u) => [u.id, u.name]))
 const caseNameById = Object.fromEntries(cases.map((c) => [c.id, `#${c.number} · ${c.name}`]))
 
 export default function Files() {
-  const [files, setFiles] = useState(initialFiles.filter((f) => !f.trashed))
+  const { files: allFiles, addFile, updateFile } = useAppData()
+  const files = allFiles.filter((file) => !file.trashed)
   const [view, setView] = useState('grid')
   const [query, setQuery] = useState('')
   const [caseFilter, setCaseFilter] = useState('')
@@ -28,10 +30,10 @@ export default function Files() {
 
   function handleAction(action, file) {
     if (action === 'transfer') setTransferFile(file)
-    if (action === 'delete') setFiles((prev) => prev.filter((f) => f.id !== file.id))
+    if (action === 'delete') updateFile(file.id, { trashed: true, trashedAt: new Date().toISOString() })
     if (action === 'rename') {
       const name = prompt('Nuevo nombre', file.name)
-      if (name) setFiles((prev) => prev.map((f) => (f.id === file.id ? { ...f, name } : f)))
+      if (name?.trim()) updateFile(file.id, { name: name.trim() })
     }
     // 'open', 'download' y 'share' requieren un backend de almacenamiento real.
   }
@@ -85,7 +87,7 @@ export default function Files() {
         <UploadModal
           cases={cases}
           onClose={() => setShowUpload(false)}
-          onUploaded={(created) => setFiles((prev) => [created, ...prev])}
+          onUploaded={(created) => { addFile(created); setShowUpload(false) }}
         />
       )}
       {transferFile && <TransferModal file={transferFile} onClose={() => setTransferFile(null)} onSent={() => setTransferFile(null)} />}

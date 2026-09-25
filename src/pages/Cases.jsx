@@ -1,29 +1,29 @@
 import React, { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { cases as initialCases, clients, users } from '../data/mockData.js'
+import { users } from '../data/mockData.js'
 import { formatDate, statusBadgeClass } from '../utils.js'
+import { useAppData } from '../context/AppDataContext.jsx'
 
-const clientNameById = Object.fromEntries(clients.map((c) => [c.id, c.name]))
-const lawyerNameById = Object.fromEntries(users.map((u) => [u.id, u.name]))
 const CASE_TYPES = ['Derecho Civil', 'Derecho Corporativo', 'Derecho Laboral', 'Derecho de Familia']
 
 export default function Cases() {
   const navigate = useNavigate()
-  const [cases, setCases] = useState(initialCases)
+  const { cases, clients, addCase } = useAppData()
   const [query, setQuery] = useState('')
   const [status, setStatus] = useState('')
   const [showNew, setShowNew] = useState(false)
 
   const filtered = useMemo(() => {
     return cases.filter((c) => {
-      const matchesQuery = !query || c.name.toLowerCase().includes(query.toLowerCase()) || c.number.includes(query) || clientNameById[c.clientId]?.toLowerCase().includes(query.toLowerCase())
+      const client = clients.find((item) => item.id === c.clientId)
+      const matchesQuery = !query || c.name.toLowerCase().includes(query.toLowerCase()) || c.number.includes(query) || client?.name.toLowerCase().includes(query.toLowerCase())
       const matchesStatus = !status || c.status === status
       return matchesQuery && matchesStatus
     })
-  }, [cases, query, status])
+  }, [cases, clients, query, status])
 
   function handleCreate(newCase) {
-    setCases((prev) => [newCase, ...prev])
+    addCase(newCase)
     setShowNew(false)
   }
 
@@ -68,10 +68,10 @@ export default function Cases() {
                   <div className="row-link">#{c.number}</div>
                   <div className="cell-muted">{c.name}</div>
                 </td>
-                <td>{clientNameById[c.clientId]}</td>
+                <td>{clients.find((client) => client.id === c.clientId)?.name || '—'}</td>
                 <td className="cell-muted">{c.type}</td>
                 <td><span className={`badge ${statusBadgeClass(c.status)}`}>{c.status}</span></td>
-                <td className="cell-muted">{lawyerNameById[c.lawyerId]}</td>
+                <td className="cell-muted">{users.find((user) => user.id === c.lawyerId)?.name || '—'}</td>
                 <td className="cell-muted">{formatDate(c.updatedAt)}</td>
               </tr>
             ))}
@@ -99,7 +99,8 @@ export default function Cases() {
 
 function NewCaseModal({ onClose, onCreate, nextNumber }) {
   const [name, setName] = useState('')
-  const [clientId, setClientId] = useState(clients[0]?.id || '')
+  const { clients } = useAppData()
+  const [clientId, setClientId] = useState('')
   const [type, setType] = useState(CASE_TYPES[0])
   const [description, setDescription] = useState('')
 
@@ -114,7 +115,7 @@ function NewCaseModal({ onClose, onCreate, nextNumber }) {
       status: 'Activo',
       createdAt: new Date().toISOString().slice(0, 10),
       updatedAt: new Date().toISOString().slice(0, 10),
-      lawyerId: 'u2',
+      lawyerId: '',
       description,
       notes: '',
     })

@@ -5,7 +5,7 @@ import { timeAgo, initials } from '../utils.js'
 export default function Admin() {
   const [users, setUsers] = useState(initialUsers)
   const [tab, setTab] = useState('usuarios')
-  const pct = Math.round((storage.usedGB / storage.totalGB) * 100)
+  const pct = storage.totalGB ? Math.round((storage.usedGB / storage.totalGB) * 100) : 0
 
   function toggleSuspend(id) {
     setUsers((prev) => prev.map((u) => (u.id === id ? { ...u, suspended: !u.suspended } : u)))

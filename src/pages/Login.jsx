@@ -4,24 +4,37 @@ import { useAuth } from '../context/AuthContext.jsx'
 
 export default function Login() {
   const [mode, setMode] = useState('login') // login | register
-  const [email, setEmail] = useState('carlos.reyes@abogado.app')
+  const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [name, setName] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
-  const { login } = useAuth()
+  const { login, register, loginWithGoogle } = useAuth()
   const navigate = useNavigate()
+
+  function handleGoogleLogin() {
+    setError('')
+    setLoading(true)
+    loginWithGoogle()
+      .then(() => navigate('/'))
+      .catch(() => setError('No se pudo iniciar sesión con Google.'))
+      .finally(() => setLoading(false))
+  }
 
   async function handleSubmit(e) {
     e.preventDefault()
     setError('')
-    if (!email || !password) {
+    if ((mode === 'register' && !name.trim()) || !email.trim() || !password) {
       setError('Completa correo y contraseña.')
       return
     }
     setLoading(true)
     try {
-      await login(email, password)
+      if (mode === 'register') {
+        await register(name, email, password)
+      } else {
+        await login(email, password)
+      }
       navigate('/')
     } catch {
       setError('No se pudo iniciar sesión. Verifica tus datos.')
@@ -68,8 +81,18 @@ export default function Login() {
           {error && <div style={{ color: 'var(--danger)', fontSize: 13 }}>{error}</div>}
 
           <button className="btn btn-primary" type="submit" disabled={loading} style={{ justifyContent: 'center' }}>
-            {loading ? 'Ingresando…' : mode === 'login' ? 'Iniciar sesión' : 'Crear cuenta'}
+            {loading ? 'Procesando…' : mode === 'login' ? 'Iniciar sesión' : 'Crear cuenta'}
           </button>
+
+          {mode === 'login' && (
+            <>
+              <div className="auth-divider"><span>o continúa con</span></div>
+              <button className="btn btn-google" type="button" onClick={handleGoogleLogin} disabled={loading}>
+                <span className="google-mark">G</span>
+                Continuar con Google
+              </button>
+            </>
+          )}
 
           <div className="auth-toggle">
             {mode === 'login' ? (
@@ -80,9 +103,10 @@ export default function Login() {
           </div>
 
           <div className="muted" style={{ fontSize: 11.5, textAlign: 'center' }}>
-            Demo: cualquier correo/contraseña inicia sesión como Carlos Reyes.
+            Tu cuenta y tus datos se gestionan de forma segura con Firebase.
           </div>
         </form>
+        <div className="app-footer">Desarrollada por César y Encarnación Peña · 829 892 7257</div>
       </div>
     </div>
   )

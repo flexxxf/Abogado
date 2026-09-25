@@ -14,6 +14,9 @@ export default function Layout() {
         <div className="app-content">
           <Outlet />
         </div>
+        <footer className="app-footer">
+          Desarrollada por César y Encarnación Peña · 829 892 7257
+        </footer>
       </div>
     </div>
   )

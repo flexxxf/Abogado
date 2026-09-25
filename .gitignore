@@ -1,2 +1,5 @@
 .ash_history
 .ssh/
+.env
+node_modules/
+dist/

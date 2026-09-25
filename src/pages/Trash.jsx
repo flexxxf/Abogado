@@ -1,20 +1,18 @@
-import React, { useState } from 'react'
-import { files as allFiles, cases, users } from '../data/mockData.js'
+import React from 'react'
+import { cases, users } from '../data/mockData.js'
 import { fileIcon, formatDate } from '../utils.js'
+import { useAppData } from '../context/AppDataContext.jsx'
 
 const caseNameById = Object.fromEntries(cases.map((c) => [c.id, `#${c.number} · ${c.name}`]))
 const ownerNameById = Object.fromEntries(users.map((u) => [u.id, u.name]))
 
 export default function Trash() {
-  const [trashed, setTrashed] = useState(allFiles.filter((f) => f.trashed))
+  const { files, updateFile, removeFile } = useAppData()
+  const trashed = files.filter((file) => file.trashed)
 
-  function restore(id) {
-    setTrashed((prev) => prev.filter((f) => f.id !== id))
-  }
-
-  function deleteForever(id) {
+  function permanentlyDelete(id) {
     if (confirm('Este archivo se eliminará permanentemente. ¿Continuar?')) {
-      setTrashed((prev) => prev.filter((f) => f.id !== id))
+      removeFile(id)
     }
   }
 
@@ -41,8 +39,8 @@ export default function Trash() {
                 <td className="cell-muted">{formatDate(f.trashedAt)}</td>
                 <td>
                   <div style={{ display: 'flex', gap: 6, justifyContent: 'flex-end' }}>
-                    <button className="btn btn-outline btn-sm" onClick={() => restore(f.id)}>Restaurar</button>
-                    <button className="btn btn-danger btn-sm" onClick={() => deleteForever(f.id)}>Eliminar</button>
+                    <button className="btn btn-outline btn-sm" onClick={() => updateFile(f.id, { trashed: false, trashedAt: null })}>Restaurar</button>
+                    <button className="btn btn-danger btn-sm" onClick={() => permanentlyDelete(f.id)}>Eliminar</button>
                   </div>
                 </td>
               </tr>

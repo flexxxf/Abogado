@@ -1,9 +1,11 @@
 import React, { useState } from 'react'
 import * as api from '../services/api.js'
 import { useAuth } from '../context/AuthContext.jsx'
+import { useAppData } from '../context/AppDataContext.jsx'
 
 export default function TransferModal({ file, onClose, onSent }) {
   const { user, allUsers } = useAuth()
+  const { addTransfer } = useAppData()
   const [toId, setToId] = useState('')
   const [message, setMessage] = useState('')
   const [expiresAt, setExpiresAt] = useState('')
@@ -25,6 +27,7 @@ export default function TransferModal({ file, onClose, onSent }) {
       expiresAt: expiresAt || null,
       allowDownload,
     })
+    addTransfer(t)
     setSending(false)
     onSent?.(t)
   }

@@ -14,7 +14,7 @@ const LINKS = [
 ]
 
 export default function Sidebar({ open, onClose }) {
-  const pct = Math.round((storage.usedGB / storage.totalGB) * 100)
+  const pct = storage.totalGB ? Math.round((storage.usedGB / storage.totalGB) * 100) : 0
 
   return (
     <>

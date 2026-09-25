@@ -28,6 +28,40 @@ export async function login(email, _password) {
   return delay({ token: 'mock-token', user })
 }
 
+export async function register(name, email, _password) {
+  const normalizedEmail = email.trim().toLowerCase()
+  if (mock.users.some((user) => user.email.toLowerCase() === normalizedEmail)) {
+    throw new Error('El correo ya está registrado')
+  }
+
+  const user = {
+    id: 'u' + Math.random().toString(36).slice(2, 8),
+    name: name.trim(),
+    email: normalizedEmail,
+    role: 'Abogado',
+    title: 'Nuevo usuario',
+    specialty: '—',
+    phone: '',
+  }
+  mock.users.push(user)
+  return delay({ token: 'mock-token', user })
+}
+
+export async function loginWithGoogle(credential) {
+  const apiUrl = import.meta.env.VITE_API_URL
+  if (!apiUrl) throw new Error('Google OAuth no está configurado')
+
+  const response = await fetch(`${apiUrl}/auth/google`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ credential }),
+  })
+
+  if (!response.ok) throw new Error('No se pudo validar la cuenta de Google')
+  return response.json()
+}
+
 export async function getCurrentUser() {
   return delay(mock.users.find((u) => u.id === mock.currentUserId))
 }

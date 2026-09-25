@@ -1,13 +1,15 @@
 import React, { useState } from 'react'
-import * as api from '../services/api.js'
+import { useAuth } from '../context/AuthContext.jsx'
+import { uploadUserFile } from '../services/firebaseData.js'
 
 export default function UploadModal({ cases, defaultCaseId, onClose, onUploaded }) {
+  const { user } = useAuth()
   const [dragOver, setDragOver] = useState(false)
   const [caseId, setCaseId] = useState(defaultCaseId || '')
   const [queue, setQueue] = useState([]) // { name, progress, done }
 
   function handleFiles(fileList) {
-    const items = Array.from(fileList).map((file) => ({ file, name: file.name, progress: 0, done: false }))
+    const items = Array.from(fileList).map((file) => ({ id: `${file.name}-${Date.now()}-${Math.random()}`, file, name: file.name, progress: 0, done: false }))
     setQueue((q) => [...q, ...items])
     items.forEach((item) => simulateUpload(item))
   }
@@ -16,7 +18,7 @@ export default function UploadModal({ cases, defaultCaseId, onClose, onUploaded 
     const tick = () => {
       setQueue((q) =>
         q.map((it) => {
-          if (it.name !== item.name || it.done) return it
+            if (it.id !== item.id || it.done) return it
           const next = Math.min(it.progress + 20 + Math.random() * 15, 100)
           return { ...it, progress: next }
         })
@@ -25,8 +27,8 @@ export default function UploadModal({ cases, defaultCaseId, onClose, onUploaded 
     const interval = setInterval(tick, 220)
     setTimeout(async () => {
       clearInterval(interval)
-      const created = await api.uploadFile(item.file, { caseId })
-      setQueue((q) => q.map((it) => (it.name === item.name ? { ...it, progress: 100, done: true } : it)))
+      const created = await uploadUserFile(user.id, item.file, { caseId, trashed: false })
+      setQueue((q) => q.map((it) => (it.id === item.id ? { ...it, progress: 100, done: true } : it)))
       onUploaded?.(created)
     }, 1300)
   }
@@ -69,7 +71,7 @@ export default function UploadModal({ cases, defaultCaseId, onClose, onUploaded 
             </div>
           </div>
           {queue.map((item) => (
-            <div key={item.name} className="upload-row">
+              <div key={item.id} className="upload-row">
               <span style={{ flexShrink: 0, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 140 }}>{item.name}</span>
               <div className="progress-track">
                 <div className="progress-fill" style={{ width: `${item.progress}%` }} />
