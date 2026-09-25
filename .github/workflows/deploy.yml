@@ -29,6 +29,9 @@ jobs:
       - name: Compilar
         run: npm run build
 
+      - name: Soporte para rutas SPA
+        run: cp dist/index.html dist/404.html
+
       - name: Configurar GitHub Pages
         uses: actions/configure-pages@v5
 
