@@ -46,7 +46,10 @@ export default function Login() {
   function getAuthErrorMessage(error, fallback) {
     const messages = {
       'auth/unauthorized-domain': 'Firebase no autoriza este dominio. Agrega flexxxf.github.io en Authentication > Settings > Authorized domains.',
-      'auth/operation-not-allowed': 'Activa Google en Firebase Authentication > Sign-in method.',
+      'auth/operation-not-allowed': 'Activa el método de acceso correspondiente en Firebase Authentication > Sign-in method.',
+      'auth/email-already-in-use': 'Ese correo ya está registrado. Inicia sesión o usa otro correo.',
+      'auth/weak-password': 'La contraseña debe tener al menos 6 caracteres.',
+      'auth/invalid-email': 'El correo electrónico no es válido.',
       'auth/popup-blocked': 'El navegador bloqueó la ventana de Google. Permite ventanas emergentes para este sitio.',
       'auth/popup-closed-by-user': 'La ventana de Google se cerró antes de completar el acceso.',
       'auth/network-request-failed': 'No hay conexión con Firebase. Revisa la red e inténtalo otra vez.',

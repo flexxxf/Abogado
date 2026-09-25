@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState } from 'react'
 import { users } from '../data/mockData.js'
 import { auth, googleProvider } from '../services/firebase.js'
-import { browserLocalPersistence, createUserWithEmailAndPassword, setPersistence, signInWithEmailAndPassword, signInWithPopup, signOut } from 'firebase/auth'
+import { browserLocalPersistence, createUserWithEmailAndPassword, setPersistence, signInWithEmailAndPassword, signInWithPopup, signOut, updateProfile } from 'firebase/auth'
 
 const AuthContext = createContext(null)
 
@@ -17,6 +17,7 @@ export function AuthProvider({ children }) {
 
   async function register(name, email, password) {
     const result = await createUserWithEmailAndPassword(auth, email, password)
+    await updateProfile(result.user, { displayName: name.trim() })
     const user = { ...mapFirebaseUser(result.user), name }
     setUser(user)
     return user
