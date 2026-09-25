@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState } from 'react'
 import { users } from '../data/mockData.js'
 import { auth, googleProvider } from '../services/firebase.js'
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, signOut } from 'firebase/auth'
+import { browserLocalPersistence, createUserWithEmailAndPassword, setPersistence, signInWithEmailAndPassword, signInWithPopup, signOut } from 'firebase/auth'
 
 const AuthContext = createContext(null)
 
@@ -23,6 +23,7 @@ export function AuthProvider({ children }) {
   }
 
   async function loginWithGoogle() {
+    await setPersistence(auth, browserLocalPersistence)
     const result = await signInWithPopup(auth, googleProvider)
     const user = mapFirebaseUser(result.user)
     setUser(user)

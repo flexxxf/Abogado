@@ -50,6 +50,8 @@ export default function Login() {
       'auth/popup-blocked': 'El navegador bloqueó la ventana de Google. Permite ventanas emergentes para este sitio.',
       'auth/popup-closed-by-user': 'La ventana de Google se cerró antes de completar el acceso.',
       'auth/network-request-failed': 'No hay conexión con Firebase. Revisa la red e inténtalo otra vez.',
+      'auth/internal-error': 'El navegador bloqueó el almacenamiento temporal de Google. Permite cookies y almacenamiento para este sitio e inténtalo otra vez.',
+      'auth/web-storage-unsupported': 'El navegador no permite almacenamiento web. Desactiva la navegación privada para iniciar sesión.',
     }
     return messages[error?.code] || fallback
   }
